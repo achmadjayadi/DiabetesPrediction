@@ -1,34 +1,103 @@
 import pickle
 import streamlit as st
+import pandas as pd
 
-# Read model
+# Membaca model
 diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
 
-# Title web
-st.title('Diabetes Prediction')
+# Judul web
+st.title('Prediksi Diabetes')
 
-# Column
+# Link untuk kembali sebagai tombol dengan latar belakang warna biru dan teks putih
+st.markdown("""
+    <style>
+    .button {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+        color: #fff;  /* Warna teks putih */
+        background-color: #79c8da;
+        border: none;
+        border-radius: 15px;
+        padding: 0.25em 0.75em;
+    }
+    </style>
+    <a href="https://dhcc.netlify.app/" class="button">Kembali ke halaman utama</a>
+""", unsafe_allow_html=True)
+
+
+# Inisialisasi session state
+if 'Pregnancies' not in st.session_state:
+    st.session_state['Pregnancies'] = ''
+if 'BloodPressure' not in st.session_state:
+    st.session_state['BloodPressure'] = ''
+if 'SkinThickness' not in st.session_state:
+    st.session_state['SkinThickness'] = ''
+if 'DiabetesPedigreeFunction' not in st.session_state:
+    st.session_state['DiabetesPedigreeFunction'] = ''
+if 'Glucose' not in st.session_state:
+    st.session_state['Glucose'] = ''
+if 'Insulin' not in st.session_state:
+    st.session_state['Insulin'] = ''
+if 'BMI' not in st.session_state:
+    st.session_state['BMI'] = ''
+if 'Age' not in st.session_state:
+    st.session_state['Age'] = ''
+
+# Kolom
 col1, col2 = st.columns(2)
 
 with col1:
-    Pregnancies = st.text_input('Input Nilai Pregnancies', key='Pregnancies')
-    BloodPressure = st.text_input('Input Nilai BloodPressure', key='BloodPressure')
-    SkinThickness = st.text_input('Input Nilai SkinThickness', key='SkinThickness')
-    DiabetesPedigreeFunction = st.text_input('Input Nilai DiabetesPedigreeFunction', key='DiabetesPedigreeFunction')
+    Pregnancies = st.text_input('Input Nilai Pregnancies', st.session_state['Pregnancies'], key='Pregnancies')
+    BloodPressure = st.text_input('Input Nilai BloodPressure', st.session_state['BloodPressure'], key='BloodPressure')
+    SkinThickness = st.text_input('Input Nilai SkinThickness', st.session_state['SkinThickness'], key='SkinThickness')
+    DiabetesPedigreeFunction = st.text_input('Input Nilai DiabetesPedigreeFunction', st.session_state['DiabetesPedigreeFunction'], key='DiabetesPedigreeFunction')
 with col2:
-    Glucose = st.text_input('Input Nilai Glucose', key='Glucose')
-    Insulin = st.text_input('Input Nilai Insulin', key='Insulin')
-    BMI = st.text_input('Input Nilai BMI', key='BMI')
-    Age = st.text_input('Input Age', key='Age')
+    Glucose = st.text_input('Input Nilai Glucose', st.session_state['Glucose'], key='Glucose')
+    Insulin = st.text_input('Input Nilai Insulin', st.session_state['Insulin'], key='Insulin')
+    BMI = st.text_input('Input Nilai BMI', st.session_state['BMI'], key='BMI')
+    Age = st.text_input('Input Nilai Age', st.session_state['Age'], key='Age')
 
 # Code
 diab_diagnosis = ''
 
-# Button Prediction
+# Button Prediksi
 if st.button('Tes Prediksi Diabetes'):
-    diab_prediction = diabetes_model.predict([[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DiabetesPedigreeFunction, Age]])
+    diab_prediction = diabetes_model.predict([[float(Pregnancies), float(Glucose), float(BloodPressure), float(SkinThickness), float(Insulin), float(BMI), float(DiabetesPedigreeFunction), float(Age)]])
     if diab_prediction[0] == 1:
         diab_diagnosis = 'Pasien Terkena Diabetes'
     else:
         diab_diagnosis = 'Pasien Tidak Terkena Diabetes'
-    st.success(diab_diagnosis)
+
+# Tampilkan hasil prediksi
+st.success(diab_diagnosis)
+
+# Tampilkan penjelasan dari setiap inputan
+st.markdown('### Penjelasan Input:')
+st.markdown('**Pregnancies:** Jumlah kehamilan yang dialami oleh pasien.')
+st.markdown('**Glucose:** Kadar glukosa plasma 2 jam dalam tes toleransi glukosa oral.')
+st.markdown('**BloodPressure:** Tekanan darah diastolik (mm Hg).')
+st.markdown('**SkinThickness:** Ketebalan lipatan kulit trisep (mm).')
+st.markdown('**Insulin:** Kadar insulin serum 2 jam (mu U/ml).')
+st.markdown('**BMI:** Indeks Massa Tubuh (berat dalam kg/(tinggi dalam meter)^2).')
+st.markdown('**DiabetesPedigreeFunction:** Fungsi silsilah diabetes (menunjukkan riwayat diabetes dalam keluarga dan pengaruhnya terhadap risiko diabetes).')
+st.markdown('**Age:** Usia pasien (tahun).')
+
+# Tambahkan tabel contoh inputan
+data = {
+    'Pregnancies': [6, 1, 8, 1, 0, 5, 3, 10, 2],
+    'Glucose': [148, 85, 183, 89, 137, 116, 78, 115, 197],
+    'BloodPressure': [72, 66, 64, 66, 40, 74, 50, 0, 70],
+    'SkinThickness': [35, 29, 0, 23, 35, 0, 32, 0, 45],
+    'Insulin': [0, 0, 0, 94, 168, 0, 88, 0, 543],
+    'BMI': [33.6, 26.6, 23.3, 28.1, 43.1, 25.6, 31.0, 35.3, 30.5],
+    'DiabetesPedigreeFunction': [0.627, 0.351, 0.672, 0.167, 2.288, 0.201, 0.248, 0.134, 0.158],
+    'Age': [50, 31, 32, 21, 33, 30, 26, 29, 53],
+    'Outcome': [1, 0, 1, 0, 1, 0, 1, 0, 1]
+}
+df_contoh_inputan = pd.DataFrame(data)
+
+st.markdown('### Contoh Inputan:')
+st.write(df_contoh_inputan)
