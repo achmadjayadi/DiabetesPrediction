@@ -1,9 +1,16 @@
 import pickle
 import streamlit as st
 import pandas as pd
+from sklearn.preprocessing import StandardScaler  # Tambahkan import scaler
 
 # Membaca model
 diabetes_model = pickle.load(open('diabetes_model.sav', 'rb'))
+
+# Inisialisasi scaler dengan skala yang sama yang digunakan saat training
+scaler = StandardScaler()
+# Contoh skala yang sama yang digunakan saat training, sesuaikan dengan skala yang benar
+scaler.mean_ = [3.55, 121.69, 72.41, 29.15, 155.55, 33.09, 0.47, 33.24]
+scaler.scale_ = [3.38, 30.53, 12.34, 10.48, 118.77, 7.28, 0.33, 11.76]
 
 # Judul web
 st.title('Prediksi Diabetes')
@@ -51,13 +58,13 @@ col1, col2 = st.columns(2)
 
 with col1:
     Pregnancies = st.text_input('Input Nilai Pregnancies', st.session_state['Pregnancies'], key='Pregnancies')
+    Glucose = st.text_input('Input Nilai Glucose', st.session_state['Glucose'], key='Glucose')
     BloodPressure = st.text_input('Input Nilai BloodPressure', st.session_state['BloodPressure'], key='BloodPressure')
     SkinThickness = st.text_input('Input Nilai SkinThickness', st.session_state['SkinThickness'], key='SkinThickness')
-    DiabetesPedigreeFunction = st.text_input('Input Nilai DiabetesPedigreeFunction', st.session_state['DiabetesPedigreeFunction'], key='DiabetesPedigreeFunction')
 with col2:
-    Glucose = st.text_input('Input Nilai Glucose', st.session_state['Glucose'], key='Glucose')
     Insulin = st.text_input('Input Nilai Insulin', st.session_state['Insulin'], key='Insulin')
     BMI = st.text_input('Input Nilai BMI', st.session_state['BMI'], key='BMI')
+    DiabetesPedigreeFunction = st.text_input('Input Nilai DiabetesPedigreeFunction', st.session_state['DiabetesPedigreeFunction'], key='DiabetesPedigreeFunction')
     Age = st.text_input('Input Nilai Age', st.session_state['Age'], key='Age')
 
 # Code
@@ -65,7 +72,11 @@ diab_diagnosis = ''
 
 # Button Prediksi
 if st.button('Tes Prediksi Diabetes'):
-    diab_prediction = diabetes_model.predict([[float(Pregnancies), float(Glucose), float(BloodPressure), float(SkinThickness), float(Insulin), float(BMI), float(DiabetesPedigreeFunction), float(Age)]])
+    # Standarisasi data input sebelum prediksi
+    input_data = [[float(Pregnancies), float(Glucose), float(BloodPressure), float(SkinThickness), float(Insulin), float(BMI), float(DiabetesPedigreeFunction), float(Age)]]
+    std_data = scaler.transform(input_data)
+    
+    diab_prediction = diabetes_model.predict(std_data)
     if diab_prediction[0] == 1:
         diab_diagnosis = 'Pasien Terkena Diabetes'
     else:
